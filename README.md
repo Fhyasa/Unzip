@@ -22,5 +22,5 @@ This is a simple tool that automates the process of unzipping files from specifi
 The tool looks for ZIP files in the specified directories. If it finds a ZIP file with more than one item, it creates a new folder with the same name as the ZIP file. Otherwise, it extracts the content directly into the same directory.
 
 ### License
-This project is not licensed and is free to use, modify, or copy.
+This project is licensed.
 
