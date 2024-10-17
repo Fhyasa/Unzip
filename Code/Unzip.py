@@ -3,6 +3,9 @@ import os
 import platform
 from time import sleep
 
+# To build a new .exe file, open cmd or PS1, navigate to the script's dir and use the following command (pip install pyinstller):
+# Command: "pyinstaller --onefile .\Unzip.spec"
+
 os.system("cls")
 
 def dir():
