@@ -16,12 +16,12 @@ VSVersionInfo(
       StringTable(
         u'040904b0', [
         StringStruct(u'FileDescription', u'Automatically Unzip Files'),
-        StringStruct(u'FileVersion', u'1.0.0.0'),
+        StringStruct(u'FileVersion', u'1.0.0.1'),
         StringStruct(u'InternalName', u'Unzip'),
         StringStruct(u'LegalCopyright', u'Copyright© 2024 All rights reserved.'),
         StringStruct(u'OriginalFilename', u'Unzip'),
         StringStruct(u'ProductName', u'Unzip'),
-        StringStruct(u'ProductVersion', u'1.0.0.0')])
+        StringStruct(u'ProductVersion', u'1.0.0.1')])
       ]),
     VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
   ]

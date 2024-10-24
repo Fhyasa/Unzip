@@ -2,6 +2,7 @@ import zipfile
 import os
 import platform
 from time import sleep
+from termcolor import colored
 
 # To build a new .exe file, open cmd or PS1, navigate to the script's dir and use the following command (pip install pyinstller):
 # Command: "pyinstaller .\Unzip.spec"
@@ -18,7 +19,11 @@ def dir():
         directory = directory.strip() 
         if not os.path.isdir(directory):
             os.system("cls")
-            print(f"The specified directory '{directory}' does not exist. Please try again.", end='', flush=True)
+            print(colored("Error: ", 'light_red') + 
+                colored("The specified directory '") + 
+                colored(f"{directory}", attrs=['underline']) + 
+                colored("' does not exist. Please try again."), 
+                end='', flush=True)
             for i in range(8):
                 print(".", end='', flush=True)
                 sleep(0.5)
@@ -29,7 +34,10 @@ def dir():
             zip_files = [filename for filename in os.listdir(directory) if filename.endswith(".zip")]
 
             if not zip_files:
-                print(f"No zip files found in directory '{directory}'. Please try again.", end='', flush=True)
+                print(colored("Error: ", "light_red") +
+                    colored(f"No zip files found in directory '") +
+                    colored(directory, attrs=['underline']) +
+                    colored("'. Please try again."), end='', flush=True)
                 for i in range(8):
                     print(".", end='', flush=True)
                     sleep(0.5)
@@ -54,11 +62,11 @@ def MDir(directories):
                     if item_count > 1:
                         extract_dir = os.path.join(directory, filename[:-4])
                         zip_ref.extractall(extract_dir)
-                        print(f"Extracted {item_count} items from '{filename}' to '{extract_dir}'")
+                        print(f"Extracted {item_count} items from '{filename}' to '{extract_dir}'😄")
 
                     else:
                         zip_ref.extractall(directory)
-                        print(f"Extracted 1 item from '{filename}' to '{directory}'")
+                        print(f"Extracted 1 item from '{filename}' to '{directory}'😄")
     print('\n\n')                
     dir()
 dir()
