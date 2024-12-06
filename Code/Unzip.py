@@ -8,8 +8,10 @@ MAX_CHILD_FOLDERS = 5
 unzipped_count = 0  # Track the number of unzipped files
 current_directory = ""  # Track the current directory
 current_file = ""  # Track the current file being processed
+status_initialized = False  # Track if the status lines have been initialized
 
 def dir():
+    os.system("cls")
     directories_input = input("Specify the directories containing zip files (if multiple, separated by '/')\nTo exit type 'exit'\n\nDirectories: ")
     if directories_input.lower() == 'exit':
         exit()
@@ -32,12 +34,24 @@ def print_error(message):
     print(colored("Error: ", 'light_red') + message, flush=True)
     sleep(2)
 
+def initialize_status():
+    """Initialize the status lines for dynamic updates."""
+    global status_initialized
+    if not status_initialized:
+        print("\n" * 3, end="")  # Reserve space for the status updates
+        status_initialized = True
+
+def clear_lines(count):
+    """Clear a specific number of lines above the current cursor position."""
+    print("\033[F" * count + "\033[K" * count, end="")
+
 def update_status():
-    """Update the status output dynamically over three lines using ANSI escape sequences."""
-    print("\033[F\033[F\033[F", end="")  # Move the cursor up three lines
-    print(f"Unzipped files: {unzipped_count}                  ")
-    print(f"Processing dir: {current_directory}                  ")
-    print(f"File: {current_file}                  ")
+    """Update the status output dynamically over three lines."""
+    initialize_status()
+    clear_lines(3)  # Move up three lines and clear them
+    print(f"Unzipped files: {unzipped_count}")
+    print(f"Processing dir: {current_directory}")
+    print(f"File: {current_file}")
 
 def process_directory(directory):
     global current_directory, unzipped_count
@@ -100,8 +114,5 @@ def process_zip(directory, filename):
         return 0
 
 if __name__ == "__main__":
-    # Print initial empty lines for dynamic updates
-    print("Unzipped files: 0")
-    print("Processing dir: ")
-    print("File: ")
-    dir()
+    while True:  # Keep looping back to the directory input
+        dir()
