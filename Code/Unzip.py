@@ -5,15 +5,19 @@ from termcolor import colored
 
 BASE_DIRECTORY = r"X:\HD\HD-Log-kunder"
 MAX_CHILD_FOLDERS = 5
-unzipped_count = 0  # Track the number of unzipped files
-current_directory = ""  # Track the current directory
-current_file = ""  # Track the current file being processed
-status_initialized = False  # Track if the status lines have been initialized
+unzipped_count = 0
+current_directory = ""
+current_file = ""
+status_initialized = False
 
 def dir():
     os.system("cls")
+    if unzipped_count > 0:
+        print_summary()
+
     directories_input = input("Specify the directories containing zip files (if multiple, separated by '/')\nTo exit type 'exit'\n\nDirectories: ")
     if directories_input.lower() == 'exit':
+        print_summary()
         exit()
     directories = directories_input.split("/")
 
@@ -22,11 +26,17 @@ def dir():
         if not os.path.isdir(directory):
             print_error(f"The specified directory '{directory}' does not exist.")
             dir()
-        elif os.path.abspath(directory) == os.path.abspath(BASE_DIRECTORY):
+        elif (
+            os.path.splitdrive(directory)[0] == os.path.splitdrive(BASE_DIRECTORY)[0]
+            and os.path.abspath(directory) == os.path.abspath(BASE_DIRECTORY)
+        ):
             print_error(f"Cannot process the base directory '{directory}' directly. Please specify a subdirectory.")
             dir()
-        elif os.path.commonpath([directory, BASE_DIRECTORY]) == BASE_DIRECTORY:
-            process_directory(directory)
+        elif os.path.splitdrive(directory)[0] == os.path.splitdrive(BASE_DIRECTORY)[0]:
+            if os.path.commonpath([directory, BASE_DIRECTORY]) == BASE_DIRECTORY:
+                process_directory(directory)
+            else:
+                process_directory(directory)
         else:
             process_directory(directory)
 
@@ -35,20 +45,17 @@ def print_error(message):
     sleep(2)
 
 def initialize_status():
-    """Initialize the status lines for dynamic updates."""
     global status_initialized
     if not status_initialized:
-        print("\n" * 3, end="")  # Reserve space for the status updates
+        print("\n" * 3, end="")
         status_initialized = True
 
 def clear_lines(count):
-    """Clear a specific number of lines above the current cursor position."""
     print("\033[F" * count + "\033[K" * count, end="")
 
 def update_status():
-    """Update the status output dynamically over three lines."""
     initialize_status()
-    clear_lines(3)  # Move up three lines and clear them
+    clear_lines(3)
     print(f"Unzipped files: {unzipped_count}")
     print(f"Processing dir: {current_directory}")
     print(f"File: {current_file}")
@@ -59,7 +66,6 @@ def process_directory(directory):
     update_status()
 
     try:
-        # Process zip files in the current directory
         for filename in os.listdir(directory):
             if filename.endswith(".zip"):
                 global current_file
@@ -67,14 +73,12 @@ def process_directory(directory):
                 unzipped_count += process_zip(directory, filename)
                 update_status()
 
-        # Get subdirectories and limit to MAX_CHILD_FOLDERS
         subfolders = [
             os.path.join(directory, d)
             for d in os.listdir(directory)
             if os.path.isdir(os.path.join(directory, d)) and d.lower() != "unzipped"
         ][:MAX_CHILD_FOLDERS]
 
-        # Process subdirectories recursively
         for subfolder in subfolders:
             process_directory(subfolder)
 
@@ -92,17 +96,15 @@ def process_zip(directory, filename):
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             items = zip_ref.namelist()
 
-            if len(items) == 1:  # Single-item zip
+            if len(items) == 1:
                 zip_ref.extract(items[0], directory)
-            else:  # Multi-item zip
+            else:
                 extract_dir = os.path.join(directory, filename[:-4])
                 zip_ref.extractall(extract_dir)
 
-        # Move the zip file to the "Unzipped" folder
         new_zip_path = os.path.join(unzipped_folder, filename)
         os.rename(zip_path, new_zip_path)
         
-        # Return the count of unzipped files
         return len(items)
 
     except zipfile.BadZipFile:
@@ -113,6 +115,11 @@ def process_zip(directory, filename):
         print(colored(str(e), 'red'))
         return 0
 
+def print_summary():
+    print("\n" + "-" * 40)
+    print(f"Finished processing. Total files unzipped: {unzipped_count}")
+    print("-" * 40 + "\n")
+
 if __name__ == "__main__":
-    while True:  # Keep looping back to the directory input
+    while True:
         dir()
