@@ -1,6 +1,5 @@
 import zipfile
 import os
-import platform
 from time import sleep
 from termcolor import colored
 
@@ -8,7 +7,6 @@ from termcolor import colored
 # Command: "pyinstaller .\Unzip.spec"
 
 os.system("cls")
-
 def dir():
     directories_input = input("Specify the directories containing zip files (if multiple, separated by '/')\nTo exit type 'exit'\n\nDirectories: ")
     if directories_input == 'exit':
@@ -16,7 +14,7 @@ def dir():
     directories = directories_input.split("/")
 
     for directory in directories:
-        directory = directory.strip() 
+        directory = directory.strip()
         if not os.path.isdir(directory):
             os.system("cls")
             print(colored("Error: ", 'light_red') + 
@@ -56,6 +54,11 @@ def MDir(directories):
             if filename.endswith(".zip"):
                 zip_path = os.path.join(directory, filename)
                 
+                # Create "Unzipped" folder
+                unzipped_folder = os.path.join(directory, "Unzipped")
+                if not os.path.exists(unzipped_folder):
+                    os.makedirs(unzipped_folder)
+
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     item_count = len(zip_ref.namelist())
                     
@@ -63,10 +66,15 @@ def MDir(directories):
                         extract_dir = os.path.join(directory, filename[:-4])
                         zip_ref.extractall(extract_dir)
                         print(f"Extracted {item_count} items from '{filename}' to '{extract_dir}'😄")
-
                     else:
                         zip_ref.extractall(directory)
                         print(f"Extracted 1 item from '{filename}' to '{directory}'😄")
+                new_zip_path = os.path.join(unzipped_folder, filename)
+                os.rename(zip_path, new_zip_path)
+                print(f"Moved '{filename}' to '{unzipped_folder}'")
+
     print('\n\n')                
     dir()
-dir()
+
+if __name__ == "__main__":
+    dir()
