@@ -1,5 +1,6 @@
 import zipfile
 import os
+import sys
 from time import sleep
 from termcolor import colored
 
@@ -10,7 +11,37 @@ current_directory = ""
 current_file = ""
 status_initialized = False
 
-def dir():
+def main():
+    if len(sys.argv) > 1:
+        directory_arg = sys.argv[1]
+        if directory_arg == ".":
+            start_directory = os.getcwd()
+        else:
+            start_directory = directory_arg
+
+        if not os.path.isdir(start_directory):
+            print_error(f"The specified directory '{start_directory}' does not exist.")
+            return
+        is_within_base = is_subdirectory(start_directory, BASE_DIRECTORY)
+
+        if is_within_base:
+            process_directory_recursive(start_directory)
+        else:
+            process_directory_flat(start_directory)
+    else:
+        interactive_mode()
+
+def is_subdirectory(directory, base_directory):
+    """Check if `directory` is a subdirectory of `base_directory`, handling different drives."""
+    drive_directory, _ = os.path.splitdrive(directory)
+    drive_base, _ = os.path.splitdrive(base_directory)
+
+    if drive_directory.lower() != drive_base.lower():
+        return False
+
+    return os.path.commonpath([os.path.abspath(directory), os.path.abspath(base_directory)]) == os.path.abspath(base_directory)
+
+def interactive_mode():
     os.system("cls")
     if unzipped_count > 0:
         print_summary()
@@ -25,20 +56,13 @@ def dir():
         directory = directory.strip()
         if not os.path.isdir(directory):
             print_error(f"The specified directory '{directory}' does not exist.")
-            dir()
-        elif (
-            os.path.splitdrive(directory)[0] == os.path.splitdrive(BASE_DIRECTORY)[0]
-            and os.path.abspath(directory) == os.path.abspath(BASE_DIRECTORY)
-        ):
-            print_error(f"Cannot process the base directory '{directory}' directly. Please specify a subdirectory.")
-            dir()
-        elif os.path.splitdrive(directory)[0] == os.path.splitdrive(BASE_DIRECTORY)[0]:
-            if os.path.commonpath([directory, BASE_DIRECTORY]) == BASE_DIRECTORY:
-                process_directory(directory)
-            else:
-                process_directory(directory)
+            interactive_mode()
+        is_within_base = is_subdirectory(directory, BASE_DIRECTORY)
+
+        if is_within_base:
+            process_directory_recursive(directory)
         else:
-            process_directory(directory)
+            process_directory_flat(directory)
 
 def print_error(message):
     print(colored("Error: ", 'light_red') + message, flush=True)
@@ -60,7 +84,23 @@ def update_status():
     print(f"Processing dir: {current_directory}")
     print(f"File: {current_file}")
 
-def process_directory(directory):
+def process_directory_flat(directory):
+    global current_directory, unzipped_count
+    current_directory = directory
+    update_status()
+
+    try:
+        for filename in os.listdir(directory):
+            if filename.endswith(".zip"):
+                global current_file
+                current_file = filename
+                unzipped_count += process_zip(directory, filename)
+                update_status()
+    except Exception as e:
+        print(colored("\nError processing directory: ", 'red') + directory)
+        print(colored(str(e), 'red'))
+
+def process_directory_recursive(directory):
     global current_directory, unzipped_count
     current_directory = directory
     update_status()
@@ -80,7 +120,7 @@ def process_directory(directory):
         ][:MAX_CHILD_FOLDERS]
 
         for subfolder in subfolders:
-            process_directory(subfolder)
+            process_directory_recursive(subfolder)
 
     except Exception as e:
         print(colored("\nError processing directory: ", 'red') + directory)
@@ -121,5 +161,4 @@ def print_summary():
     print("-" * 40 + "\n")
 
 if __name__ == "__main__":
-    while True:
-        dir()
+    main()
