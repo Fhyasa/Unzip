@@ -1,6 +1,7 @@
 import zipfile
 import os
 import sys
+import time
 from time import sleep
 from termcolor import colored
 
@@ -22,17 +23,21 @@ def main():
         if not os.path.isdir(start_directory):
             print_error(f"The specified directory '{start_directory}' does not exist.")
             return
+
+        start_time = time.time()
         is_within_base = is_subdirectory(start_directory, BASE_DIRECTORY)
 
         if is_within_base:
             process_directory_recursive(start_directory)
         else:
             process_directory_flat(start_directory)
+
+        end_time = time.time()
+        print_summary(end_time - start_time)
     else:
         interactive_mode()
 
 def is_subdirectory(directory, base_directory):
-    """Check if `directory` is a subdirectory of `base_directory`, handling different drives."""
     drive_directory, _ = os.path.splitdrive(directory)
     drive_base, _ = os.path.splitdrive(base_directory)
 
@@ -50,8 +55,10 @@ def interactive_mode():
     if directories_input.lower() == 'exit':
         print_summary()
         exit()
+
     directories = directories_input.split("/")
 
+    start_time = time.time()
     for directory in directories:
         directory = directory.strip()
         if not os.path.isdir(directory):
@@ -63,6 +70,9 @@ def interactive_mode():
             process_directory_recursive(directory)
         else:
             process_directory_flat(directory)
+
+    end_time = time.time()
+    print_summary(end_time - start_time)
 
 def print_error(message):
     print(colored("Error: ", 'light_red') + message, flush=True)
@@ -155,9 +165,12 @@ def process_zip(directory, filename):
         print(colored(str(e), 'red'))
         return 0
 
-def print_summary():
+def print_summary(duration_seconds=0):
+    global unzipped_count
     print("\n" + "-" * 40)
-    print(f"Finished processing. Total files unzipped: {unzipped_count}")
+    print(f"Finished processing. Total zip files unzipped: {unzipped_count}")
+    if duration_seconds:
+        print(f"Total time: {duration_seconds:.2f} seconds")
     print("-" * 40 + "\n")
 
 if __name__ == "__main__":
